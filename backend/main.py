@@ -1,6 +1,5 @@
-import logging
-import time
-from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database import engine, Base, get_db
 from schemas import EmployeeCreate, EmployeeResponse
@@ -18,36 +17,21 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Employee Management System")
 
-# Allow all localhost origins so any Vite dev port works
+# Allow requests from local React development servers
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    # Covers localhost with any dev port (5174, 5175, etc.)
     allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-# Log each request with status code and processing time
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    start_time = time.perf_counter()
-    logger.info("Request started: %s %s", request.method, request.url.path)
-    response = await call_next(request)
-    process_time_ms = (time.perf_counter() - start_time) * 1000
-    logger.info(
-        "Request completed: %s %s | status=%s | time_ms=%.2f",
-        request.method,
-        request.url.path,
-        response.status_code,
-        process_time_ms,
-    )
-    return response
-
-
-@app.on_event("startup")
-def on_startup():
-    logger.info("Employee Management API started")
 
 
 @app.get("/")
