@@ -4,7 +4,13 @@ from sqlalchemy.orm import Session
 from database import engine, Base, get_db
 from schemas import EmployeeCreate, EmployeeResponse
 from typing import List
-import models  # Importing models so SQLAlchemy knows about them
+
+# Configure simple app-wide logs
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 # Creates tables in SQLite if they don't already exist
 Base.metadata.create_all(bind=engine)
@@ -30,37 +36,42 @@ app.add_middleware(
 
 @app.get("/")
 def root():
+    logger.info("Root endpoint called")
     return {"message": "Welcome to the Employee Management System"}
 
 
 # ---------- CREATE ----------
 @app.post("/employees", response_model=EmployeeResponse)
 def add_employee(employee: EmployeeCreate, db: Session = Depends(get_db)):
-    # Build a new Employee record from the request data
+    # Build and save a new employee record
     new_employee = models.Employee(name=employee.name, role=employee.role)
-    db.add(new_employee)      # Stage the new record
-    db.commit()               # Save to database
-    db.refresh(new_employee)  # Reload to get the auto-generated id
+    db.add(new_employee)
+    db.commit()
+    db.refresh(new_employee)
+    logger.info("Employee created with id=%s", new_employee.id)
     return new_employee
 
 
 # ---------- READ ----------
 @app.get("/employees", response_model=List[EmployeeResponse])
 def get_all_employees(db: Session = Depends(get_db)):
-    # Fetch every row from the employees table
+    # Fetch all employees
     employees = db.query(models.Employee).all()
+    logger.info("Fetched %s employees", len(employees))
     return employees
 
 
 # ---------- DELETE ----------
 @app.delete("/employees/{employee_id}")
 def delete_employee(employee_id: int, db: Session = Depends(get_db)):
-    # Look up the employee by primary key
+    # Find employee by ID
     employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
 
     if not employee:
+        logger.warning("Delete requested for missing employee id=%s", employee_id)
         raise HTTPException(status_code=404, detail="Employee not found")
 
-    db.delete(employee)  # Mark for deletion
-    db.commit()          # Apply the deletion
+    db.delete(employee)
+    db.commit()
+    logger.info("Employee deleted id=%s", employee_id)
     return {"message": f"Employee {employee_id} deleted successfully"}
