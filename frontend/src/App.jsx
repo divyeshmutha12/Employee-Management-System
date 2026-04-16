@@ -1,6 +1,6 @@
+import { useState } from 'react'
 import AddEmployeeForm from './components/AddEmployeeForm'
 import EmployeeList from './components/EmployeeList'
-import { useState } from 'react'
 
 function App() {
   const [refreshKey, setRefreshKey] = useState(0)

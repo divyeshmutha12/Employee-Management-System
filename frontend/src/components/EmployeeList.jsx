@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { Alert, Button, Card, List, Popconfirm, Space, Tag, Typography } from 'antd'
+import API_BASE_URL from '../api'
 
 const { Title, Text } = Typography
-const API_BASE_URL = 'http://127.0.0.1:8000'
 
 function EmployeeList({ refreshKey = 0 }) {
   const [employees, setEmployees] = useState([])

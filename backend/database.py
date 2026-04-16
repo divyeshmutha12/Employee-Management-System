@@ -1,28 +1,25 @@
+from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# SQLite file-based database stored in the project folder
-DATABASE_URL = "sqlite:///./employees.db"
+# Absolute path ensures the DB file is always created next to this file,
+# regardless of which directory uvicorn is started from
+DB_PATH = Path(__file__).resolve().parent / "employees.db"
+DATABASE_URL = f"sqlite:///{DB_PATH}"
 
-# Engine is the connection to the database
-# check_same_thread=False is required for SQLite with FastAPI
-engine = create_engine(
-    DATABASE_URL, connect_args={"check_same_thread": False}
-)
+# check_same_thread=False is required when using SQLite with FastAPI
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
-# SessionLocal handles individual database transactions
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base is inherited by all models (tables)
 Base = declarative_base()
 
 
-# Dependency injected into routes to get a DB session
-# Automatically closes the session after the request is done
 def get_db():
+    """Yield a database session and close it when the request is done."""
     db = SessionLocal()
     try:
-        yield db       # Provide the session to the route
+        yield db
     finally:
-        db.close()     # Always close after use
+        db.close()

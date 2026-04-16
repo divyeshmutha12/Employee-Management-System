@@ -1,11 +1,9 @@
 import { useState } from 'react'
 import axios from 'axios'
 import { Alert, Button, Card, Form, Input, Typography } from 'antd'
+import API_BASE_URL from '../api'
 
 const { Title, Text } = Typography
-
-// Backend URL for FastAPI
-const API_BASE_URL = 'http://127.0.0.1:8000'
 
 function AddEmployeeForm({ onEmployeeAdded }) {
   // Form data managed with useState

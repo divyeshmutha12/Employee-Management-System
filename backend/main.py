@@ -1,25 +1,20 @@
-from fastapi import FastAPI, Depends, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-from database import engine, Base, get_db
-from schemas import EmployeeCreate, EmployeeResponse
 from typing import List
-import models  # Importing models so SQLAlchemy knows about them
 
-# Creates tables in SQLite if they don't already exist
+import models
+from database import Base, engine, get_db
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from schemas import EmployeeCreate, EmployeeResponse
+from sqlalchemy.orm import Session
+
+# Create tables on startup if they don't exist yet
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Employee Management System")
 
-# Allow frontend requests from local React dev servers
+# Allow all localhost origins so any Vite dev port works
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
     allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
