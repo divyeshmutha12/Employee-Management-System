@@ -1,0 +1,20 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f7fb;
+}
+
+.page-wrap {
+  max-width: 820px;
+  margin: 40px auto;
+  padding: 0 16px;
+}
+
+.employee-form-card,
+.employee-card {
+  border-radius: 12px;
+}
