@@ -27,11 +27,7 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
-    except Exception:
-        # Roll back the active transaction before re-raising the error
-        db.rollback()
-        logger.exception("Database session failed during request")
-        raise
+
     finally:
         try:
             db.close()
