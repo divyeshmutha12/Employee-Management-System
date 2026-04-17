@@ -1,9 +1,8 @@
 from pathlib import Path
+import logging
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from pathlib import Path
-import logging
 
 # Basic logger for database events
 logger = logging.getLogger(__name__)
@@ -28,5 +27,13 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
+    except Exception:
+        # Roll back the active transaction before re-raising the error
+        db.rollback()
+        logger.exception("Database session failed during request")
+        raise
     finally:
-        db.close()
+        try:
+            db.close()
+        except Exception:
+            logger.exception("Failed to close database session")
